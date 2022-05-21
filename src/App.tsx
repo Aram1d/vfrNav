@@ -9,7 +9,7 @@ export const App = () => {
 
   return (
     <ChakraProvider theme={theme}>
-      <Box minH="100vh" maxWidth="1200px" p={3}>
+      <Box minH="100vh" maxWidth="1600px" p={3} margin="auto">
         <FplHeader usedFpl={usedFpl} setUsedFpl={setUsedFpl} />
         <FlightPlanTable />
       </Box>

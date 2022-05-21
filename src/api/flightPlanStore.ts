@@ -2,12 +2,13 @@ import create from "zustand";
 import produce from "immer";
 import { persist } from "zustand/middleware";
 import {
-  buildComputations,
-  Computation,
-  LegComputations,
+  ComputedLegs,
+  computeLegs,
+  getBaseFactor,
 } from "../ui/ComputationUtils";
 
 export interface Leg {
+  name: string;
   alt: {
     desired: number;
     minimal: number;
@@ -20,7 +21,8 @@ export interface Leg {
   };
 }
 
-const mkLeg = (): Leg => ({
+const mkLegState = (): Leg => ({
+  name: "",
   alt: {
     desired: 0,
     minimal: 0,
@@ -53,8 +55,8 @@ export interface FlightPlanStore {
   date: string;
   setDate: (date: Date) => void;
 
-  computation: Computation;
-  legComputation: LegComputations;
+  getBaseFactor: () => number;
+  computeLegs: () => ComputedLegs;
 
   legs: Leg[];
   setLeg: <KeyofLeg extends keyof Leg>(
@@ -74,6 +76,9 @@ export interface FlightPlanStore {
     dataType: TDataType,
     value: Leg["wind"][TDataType]
   ) => void;
+
+  hideWind: boolean;
+  toggleHideWind: () => void;
 }
 
 export const useFplStore = create<FlightPlanStore>(
@@ -120,18 +125,18 @@ export const useFplStore = create<FlightPlanStore>(
       setDate: (date) =>
         set(
           produce((state) => {
-            console.log(date);
             state.date = date.toString();
           })
         ),
 
-      ...buildComputations(get),
+      getBaseFactor: () => getBaseFactor(get),
+      computeLegs: () => computeLegs(get),
 
       legs: [],
       setLeg: (index, KeyofLeg, value) =>
         set(
           produce((state) => {
-            const leg = state.legs[index] || mkLeg();
+            const leg = state.legs[index] || mkLegState();
             leg[KeyofLeg] = value;
             state.legs[index] = leg;
           })
@@ -139,7 +144,10 @@ export const useFplStore = create<FlightPlanStore>(
       addLeg: () =>
         set(
           produce((state) => {
-            state.legs.push(mkLeg());
+            state.legs.push({
+              ...(state.legs.slice(-1)[0] || mkLegState()),
+              distance: 0,
+            });
           })
         ),
       removeLeg: () =>
@@ -161,14 +169,19 @@ export const useFplStore = create<FlightPlanStore>(
           })
         );
       },
+      hideWind: false,
+      toggleHideWind: () =>
+        set(
+          produce((state) => {
+            state.hideWind = !state.hideWind;
+          })
+        ),
     }),
     {
-      name: `vfr-nav-flp-1`,
+      name: `vfr-nav-fpl-1`,
       merge: (persistedState, currentState) => ({
         ...currentState,
         ...persistedState,
-        computation: currentState.computation,
-        legComputation: currentState.legComputation,
       }),
     }
   )
