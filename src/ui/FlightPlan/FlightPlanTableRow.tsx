@@ -1,200 +1,215 @@
 import {
+  ActionIcon,
   Button,
-  ButtonGroup,
+  Group,
   Input,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
+  Menu,
   NumberInput,
-  NumberInputField,
-  NumberInputStepper,
   Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverCloseButton,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
-  PopoverTrigger,
-  Td,
-  Tr,
-  useBoolean,
-  VStack,
-} from "@chakra-ui/react";
+  Stack,
+  Text,
+} from "@mantine/core";
 import dayjs from "dayjs";
+import { ChangeEvent, useState } from "react";
+import { ArrowDown, ArrowUp, Clock, Trash, X } from "tabler-icons-react";
 import * as React from "react";
 import { ComputedLegs } from "../ComputationUtils";
-import { FlightPlanStore } from "../../api/flightPlanStore";
+import { useFplStore } from "../../api/flightPlanStore";
+import { fiveCharsInputWidth, threeCharsInputWidth } from "./FlightPlanTable";
+import { useMediaQuery } from "@mantine/hooks";
 
-type ArrayElement<
-  ArrayType extends readonly unknown[]
-> = ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+type ArrayElement<ArrayType extends readonly unknown[]> =
+  ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
 type FlightPlanTableRowProps = {
-  leg: ArrayElement<ComputedLegs>;
-  hideWind: boolean;
   index: number;
-} & Pick<FlightPlanStore, "setLeg" | "setAlt" | "date" | "setDate" | "setWind">;
+  leg: ArrayElement<ComputedLegs>;
+};
 
-export const FlightPlanTableRow = ({
-  leg,
-  index,
-  setLeg,
-  setAlt,
-  setDate,
-  setWind,
-  hideWind,
-}: FlightPlanTableRowProps) => {
-  const [rebasePopover, { on, off }] = useBoolean(false);
+export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
+  const { legsHandlers, hideWind, setDate, legs } = useFplStore();
+
+  const [rebasePopover, setRebasePopOver] = useState<boolean>(false);
+  const isSmall = useMediaQuery("(max-width: 1000px)");
 
   return (
-    <Tr key={index}>
-      <Td>
-        <VStack>
+    <tr key={index}>
+      <td>
+        <Stack>
           <NumberInput
+            sx={fiveCharsInputWidth}
             step={100}
             value={leg.alt.desired}
-            onChange={(desired) =>
-              setAlt(index, "desired", parseFloat(desired) || 0)
+            onChange={(desired = 1000) =>
+              legsHandlers.setLeg(index, {
+                alt: { desired },
+              })
             }
             size="xs"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
+          />
 
           <NumberInput
+            sx={fiveCharsInputWidth}
             step={100}
             value={leg.alt.minimal}
-            onChange={(minimal) =>
-              setAlt(index, "minimal", parseFloat(minimal) || 0)
+            defaultValue={500}
+            onChange={(minimal = 500) =>
+              legsHandlers.setLeg(index, { alt: { minimal } })
             }
             size="xs"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-        </VStack>
-      </Td>
-      <Td>
+          />
+        </Stack>
+      </td>
+      <td>
         <NumberInput
+          sx={threeCharsInputWidth}
           min={0}
           max={360}
           value={leg.magneticRoute}
-          onChange={(mag) =>
-            setLeg(index, "magneticRoute", parseFloat(mag) || 0)
+          onChange={(magneticRoute = 0) =>
+            legsHandlers.setLeg(index, { magneticRoute })
           }
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </Td>
-      <Td>{leg.magneticCourse || "-"}</Td>
-      <Td>
+        />
+      </td>
+      <td>{leg.magneticCourse || "-  -  -"}</td>
+      <td>
         <NumberInput
+          sx={fiveCharsInputWidth}
           min={0}
           value={leg.distance}
-          onChange={(dist) => setLeg(index, "distance", parseFloat(dist) || 0)}
-        >
-          <NumberInputField />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
-        </NumberInput>
-      </Td>
-      <Td>{leg.duration || "-"}</Td>
-      <Td>{leg.correctedDuration || "-"}</Td>
-      <Td>
+          onChange={(distance = 0) => legsHandlers.setLeg(index, { distance })}
+        />
+      </td>
+      <td>{leg.duration || "--"}</td>
+      <td>{leg.correctedDuration || "--"}</td>
+      <td>
         <Popover
-          returnFocusOnClose={false}
-          isOpen={rebasePopover}
-          onClose={off}
-          placement="right"
-          closeOnBlur={false}
+          opened={rebasePopover}
+          onClose={() => setRebasePopOver(false)}
+          target={
+            <Button variant="subtle" onClick={() => setRebasePopOver(true)}>
+              {leg.reachDate.format("HH:mm") || "-- : --"}
+            </Button>
+          }
+          width={270}
+          position="bottom"
+          withArrow
         >
-          <PopoverTrigger>
-            <Button onClick={on}>{leg.reachDate.format("HH:mm")}</Button>
-          </PopoverTrigger>
-          <PopoverContent>
-            <PopoverHeader fontWeight="semibold">Confirmation</PopoverHeader>
-            <PopoverArrow />
-            <PopoverCloseButton />
-            <PopoverBody>
-              Voulez-vous recaler votre navigation sur cet point?
-            </PopoverBody>
-            <PopoverFooter d="flex" justifyContent="flex-end">
-              <ButtonGroup size="sm">
-                <Button variant="outline" onClick={off}>
-                  Annuler
-                </Button>
-                <Button
-                  colorScheme="red"
-                  onClick={() => {
-                    setDate(
-                      dayjs(new Date())
-                        .subtract(leg.cumulatedTimeToWPT, "minutes")
-                        .toDate()
-                    );
-                    off();
-                  }}
-                >
-                  Recaler
-                </Button>
-              </ButtonGroup>
-            </PopoverFooter>
-          </PopoverContent>
+          <Group>
+            <Clock />
+            <Text sx={{ width: "80%", fontSize: "14px", marginBottom: "10px" }}>
+              Recaler le point sur l'heure actuelle?{" "}
+            </Text>
+          </Group>
+          <Group>
+            <Button
+              onClick={() => {
+                setDate(
+                  dayjs(new Date())
+                    .subtract(leg.cumulatedTimeToWPT, "minutes")
+                    .toDate()
+                );
+                setRebasePopOver(false);
+              }}
+            >
+              Recaler
+            </Button>
+            <Button onClick={() => setRebasePopOver(false)}>Annuler</Button>
+          </Group>
         </Popover>
-      </Td>
-      {!hideWind && (
+      </td>
+      {hideWind ? (
+        <td>
+          <Input
+            value={leg.name}
+            onChange={({ currentTarget }: ChangeEvent<HTMLInputElement>) =>
+              legsHandlers.setLeg(index, { name: currentTarget.value })
+            }
+          />
+        </td>
+      ) : (
         <>
-          <Td>
+          <td>
             <NumberInput
+              sx={threeCharsInputWidth}
               min={0}
               max={360}
               value={leg.wind.direction}
-              onChange={(mag) =>
-                setWind(index, "direction", parseFloat(mag) || 0)
+              onChange={(direction = 0) =>
+                legsHandlers.setLeg(index, { wind: { direction } })
               }
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-          </Td>
-          <Td>
+            />
+          </td>
+          <td>
             <NumberInput
+              sx={threeCharsInputWidth}
               min={0}
               value={leg.wind.velocity}
-              onChange={(mag) =>
-                setWind(index, "velocity", parseFloat(mag) || 0)
+              onChange={(velocity = 0) =>
+                legsHandlers.setLeg(index, { wind: { velocity } })
               }
-            >
-              <NumberInputField />
-              <NumberInputStepper>
-                <NumberIncrementStepper />
-                <NumberDecrementStepper />
-              </NumberInputStepper>
-            </NumberInput>
-          </Td>
+            />
+          </td>
         </>
       )}
-      <Td>
-        <Input
-          value={leg.name}
-          onChange={({ target }) => setLeg(index, "name", target.value)}
-        />
-      </Td>
-    </Tr>
+      <td>
+        {isSmall ? (
+          <Menu>
+            <Menu.Item
+              icon={<ArrowUp />}
+              onClick={() =>
+                legsHandlers.reorder({ from: index, to: index - 1 })
+              }
+            >
+              Move up
+            </Menu.Item>
+            <Menu.Item
+              icon={<ArrowDown />}
+              onClick={() =>
+                legsHandlers.reorder({ from: index, to: index + 1 })
+              }
+            >
+              Move down
+            </Menu.Item>
+            <Menu.Item
+              icon={<Trash />}
+              onClick={() => legsHandlers.remove(index)}
+            >
+              Delete segment
+            </Menu.Item>
+          </Menu>
+        ) : (
+          <Group sx={{ minWidth: "4em" }}>
+            <ActionIcon
+              variant="hover"
+              onClick={() => legsHandlers.remove(index)}
+            >
+              <X />
+            </ActionIcon>
+
+            <Stack>
+              <ActionIcon
+                variant="hover"
+                disabled={index === 0}
+                onClick={() =>
+                  legsHandlers.reorder({ from: index, to: index - 1 })
+                }
+              >
+                <ArrowUp />
+              </ActionIcon>
+              <ActionIcon
+                variant="hover"
+                disabled={index === legs.length - 1}
+                onClick={() =>
+                  legsHandlers.reorder({ from: index, to: index + 1 })
+                }
+              >
+                <ArrowDown />
+              </ActionIcon>
+            </Stack>
+          </Group>
+        )}
+      </td>
+    </tr>
   );
 };

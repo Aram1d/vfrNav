@@ -1,27 +1,21 @@
-import {
-  Editable,
-  EditableInput,
-  EditablePreview,
-  HStack,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Select,
-  Stat,
-  StatGroup,
-  StatHelpText,
-  StatLabel,
-  StatNumber,
-  Switch,
-  VStack,
-} from "@chakra-ui/react";
-import dayjs from "dayjs";
 import * as React from "react";
 import { useFplStore } from "../../api/flightPlanStore";
-import DatePicker from "../DatePicker/DatePicker";
+import {
+  ActionIcon,
+  Grid,
+  Group,
+  Input,
+  InputWrapper,
+  NumberInput,
+  SegmentedControl,
+  Select,
+  SimpleGrid,
+  Stack,
+  useMantineColorScheme,
+} from "@mantine/core";
+import { DatePicker, TimeInput } from "@mantine/dates";
 import { FlightPlanImportExport } from "./FlightPlanImportExport";
+import { MoonStars, Sun } from "tabler-icons-react";
 
 export type FplHeaderProps = {
   usedFpl: string;
@@ -30,7 +24,7 @@ export type FplHeaderProps = {
 
 export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
   const {
-    date,
+    getDate,
     departureAirfield,
     aircraft,
     getBaseFactor,
@@ -44,145 +38,122 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
     toggleHideWind,
   } = useFplStore();
 
-  return (
-    <StatGroup>
-      <Stat size="sm" px={2}>
-        <StatLabel>Appareil: </StatLabel>
-        <StatNumber>
-          <Editable
-            value={aircraft.registration}
-            onChange={(nextValue) => setAircraftRegistration(nextValue)}
-          >
-            <EditablePreview />
-            <EditableInput />
-          </Editable>
-          <StatHelpText>
-            Cacher vent{" "}
-            <Switch
-              id="hide-wind"
-              size="sm"
-              isChecked={hideWind}
-              onChange={toggleHideWind}
-            />
-          </StatHelpText>
-        </StatNumber>
-      </Stat>
-      <Stat size="sm" px={2}>
-        <StatLabel>Vitesse propre (Kts): </StatLabel>
-        <StatNumber>
-          <Editable
-            value={aircraft.cruiseSpeed.toString()}
-            onChange={(nextValue) => setAircraftCruiseSpeed(nextValue || "0")}
-          >
-            <EditablePreview />
-            <EditableInput />
-          </Editable>
-        </StatNumber>
-        <StatHelpText>Fb: {getBaseFactor()}</StatHelpText>
-      </Stat>
-      <Stat size="sm" px={2} flexGrow={0.5}>
-        <StatLabel>Provenance: </StatLabel>
-        <StatNumber>
-          <Editable
-            value={departureAirfield.icao}
-            onChange={(nextValue) => setDepartureAirfieldIcao(nextValue || "-")}
-          >
-            <EditablePreview />
-            <EditableInput />
-          </Editable>
-        </StatNumber>
-      </Stat>
-      <Stat size="sm" px={2} flexGrow={0.5}>
-        <StatLabel>Destination: </StatLabel>
-        <StatNumber>
-          <Editable
-            value={arrivalAirfield.icao}
-            onChange={(nextValue) => setArrivalAirfieldIcao(nextValue || "-")}
-          >
-            <EditablePreview />
-            <EditableInput />
-          </Editable>
-        </StatNumber>
-      </Stat>
-      <Stat size="sm" px={4} flexGrow={2}>
-        <StatLabel>Date et heure du vol</StatLabel>
-        <StatNumber>
-          <DatePicker
-            onChange={(date) => setDate(date as Date)}
-            selectedDate={new Date(date)}
-          />
-        </StatNumber>
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+  const dark = colorScheme === "dark";
 
-        <HStack mt={2}>
-          <NumberInput
-            min={0}
-            max={23}
-            value={dayjs(date).hour()}
-            onChange={(hours) =>
-              setDate(
-                dayjs(date)
-                  .hour(parseFloat(hours) || 0)
-                  .toDate()
-              )
+  return (
+    <Grid columns={24}>
+      <Grid.Col sx={{ minWidth: 84 }} span={3}>
+        <InputWrapper label="Appareil:" description="immatriculation">
+          <Input
+            onChange={({ currentTarget }: any) =>
+              setAircraftRegistration(currentTarget.value)
             }
-            size="xs"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-          <NumberInput
-            min={0}
-            max={59}
-            value={dayjs(date).minute()}
-            onChange={(minutes) =>
-              setDate(
-                dayjs(date)
-                  .minute(parseFloat(minutes) || 0)
-                  .toDate()
-              )
-            }
-            size="xs"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-        </HStack>
-      </Stat>
-      <Stat size="sm" px={2}>
-        <VStack>
-          <Select
-            mt={6}
-            placeholder="Selection FPL"
-            value={usedFpl}
-            onChange={({ target }) => {
-              //@ts-expect-error bad typing
-              useFplStore.persist.setOptions({
-                name: `vfr-nav-${target.value}`,
-              });
-              //@ts-expect-error bad typing
-              useFplStore.persist.rehydrate();
-              setUsedFpl(target.value);
-            }}
-          >
-            <option value="fpl-1">FPL 1</option>
-            <option value="fpl-2">FPL 2</option>
-            <option value="fpl-3">FPL 3</option>
-            <option value="fpl-4">FPL 4</option>
-          </Select>
-          <FlightPlanImportExport
-            fplId={usedFpl}
-            departureAirfield={departureAirfield}
-            arrivalAirfield={arrivalAirfield}
-            date={date}
+            value={aircraft.registration}
           />
-        </VStack>
-      </Stat>
-    </StatGroup>
+        </InputWrapper>
+      </Grid.Col>
+      <Grid.Col span={3}>
+        <InputWrapper
+          label="Vp CRZ (Kts): "
+          description={`Fb: ${getBaseFactor()}`}
+        >
+          <NumberInput
+            hideControls
+            value={aircraft.cruiseSpeed}
+            onChange={(speed) => setAircraftCruiseSpeed(speed || 0)}
+          />
+        </InputWrapper>
+      </Grid.Col>
+      <Grid.Col span={5}>
+        <InputWrapper label="Trajet: " description="Provenance / Destination">
+          <SimpleGrid cols={2}>
+            <Input
+              value={departureAirfield.icao}
+              onChange={({ currentTarget }: any) =>
+                setDepartureAirfieldIcao(currentTarget.value)
+              }
+            />
+            <Input
+              value={arrivalAirfield.icao}
+              onChange={({ currentTarget }: any) =>
+                setArrivalAirfieldIcao(currentTarget.value)
+              }
+            />
+          </SimpleGrid>
+        </InputWrapper>
+      </Grid.Col>
+      <Grid.Col span={6}>
+        <InputWrapper
+          label="Date et heure: "
+          description="du début de la navigation"
+        >
+          <Group>
+            <DatePicker
+              sx={{ width: "55%" }}
+              onChange={(date) => setDate(date as Date)}
+              value={getDate()}
+            />
+            <TimeInput value={getDate()} onChange={(date) => setDate(date)} />
+          </Group>
+        </InputWrapper>
+      </Grid.Col>
+      <Grid.Col span={4}>
+        <Stack>
+          <InputWrapper
+            label="Selection FPL"
+            description={<FlightPlanImportExport fplId={usedFpl} />}
+          >
+            <Select
+              mt={6}
+              placeholder="Selection FPL"
+              allowDeselect={false}
+              value={usedFpl}
+              onChange={(value) => {
+                //@ts-expect-error bad typing
+                useFplStore.persist.setOptions({
+                  name: `vfr-nav-${value}`,
+                });
+                //@ts-expect-error bad typing
+                useFplStore.persist.rehydrate();
+                setUsedFpl(value as string);
+              }}
+              data={[1, 2, 3, 4].map((val) => ({
+                value: "fpl-" + val,
+                label: "FPL " + val,
+              }))}
+            />
+          </InputWrapper>
+        </Stack>
+      </Grid.Col>
+      <Grid.Col span={3}>
+        <Stack
+          sx={{
+            height: "100%",
+            paddingTop: "5px",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
+            gap: "11px",
+          }}
+        >
+          <ActionIcon
+            variant="outline"
+            color={dark ? "yellow" : "blue"}
+            onClick={() => toggleColorScheme()}
+            title="Toggle color scheme"
+          >
+            {dark ? <Sun size={18} /> : <MoonStars size={18} />}
+          </ActionIcon>
+          <SegmentedControl
+            onChange={toggleHideWind}
+            value={hideWind ? "title" : "wind"}
+            data={[
+              { value: "wind", label: "Vent" },
+              { value: "title", label: "Point" },
+            ]}
+          />
+        </Stack>
+      </Grid.Col>
+    </Grid>
   );
 };

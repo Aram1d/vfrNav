@@ -1,90 +1,64 @@
 import { useFplStore } from "../../api/flightPlanStore";
-import {
-  Box,
-  Button,
-  HStack,
-  Table,
-  Tbody,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-  useMediaQuery,
-} from "@chakra-ui/react";
+
 import * as React from "react";
+import { Button, Group, Table } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { FlightPlanTableRow } from "./FlightPlanTableRow";
-import { ColorModeSwitcher } from "../../ColorModeSwitcher";
+
+export const threeCharsInputWidth = { width: "6em" };
+export const fiveCharsInputWidth = { width: "8em" };
 
 export const FlightPlanTable = () => {
-  const {
-    setLeg,
-    addLeg,
-    removeLeg,
-    setWind,
-    setAlt,
-    computeLegs,
-    hideWind,
-    setDate,
-    date,
-  } = useFplStore();
+  const { computeLegs, hideWind, legsHandlers } = useFplStore();
 
   const legs = computeLegs();
 
-  const [isWide] = useMediaQuery("(min-width: 1000px)");
+  const isWide = useMediaQuery("(min-width: 1000px)");
 
   return (
-    <Table variant="simple" size={isWide ? "md" : "sm"}>
-      <Thead>
-        <Tr>
-          <Th width={125}>Alt. Seg / Mini (ft)</Th>
-          <Th width={130}>Rm (°)</Th>
-          <Th>Cm (°)</Th>
-          <Th width={150}>D (Nm)</Th>
-          <Th>T (min)</Th>
-          <Th>Tc (min)</Th>
-          <Th>H</Th>
-          {!hideWind && (
+    <Table
+      horizontalSpacing={isWide ? "md" : "sm"}
+      verticalSpacing={isWide ? "md" : "sm"}
+    >
+      <thead>
+        <tr>
+          <th>Alt. Seg / Mini (ft)</th>
+          <th>Rm (°)</th>
+          <th>Cm (°)</th>
+          <th>D (Nm)</th>
+          <th>T (min)</th>
+          <th>Tc (min)</th>
+          <th>H</th>
+          {hideWind ? (
+            <th>Nom point</th>
+          ) : (
             <>
-              <Th>Vent (°)</Th>
-              <Th>Vent (Kts)</Th>
+              <th>Vent (°)</th>
+              <th>Vent (Kts)</th>
             </>
           )}
-          <Th>Nom</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
+          <th />
+        </tr>
+      </thead>
+      <tbody>
         {legs.map((leg, index) => (
-          <FlightPlanTableRow
-            {...{
-              key: index,
-              leg,
-              setLeg,
-              date,
-              setDate,
-              index,
-              hideWind,
-              setWind,
-              setAlt,
-            }}
-          />
+          <FlightPlanTableRow key={index} index={index} leg={leg} />
         ))}
-      </Tbody>
-      <Tfoot>
-        <Tr>
-          <Th colSpan={10}>
-            <HStack width="100%">
-              <Button onClick={() => addLeg()} size={isWide ? "md" : "sm"}>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th colSpan={12}>
+            <Group>
+              <Button
+                onClick={() => legsHandlers.append()}
+                size={isWide ? "md" : "sm"}
+              >
                 Ajouter un segment
               </Button>
-              <Button onClick={() => removeLeg()} size={isWide ? "md" : "sm"}>
-                Supprimer dernier segment
-              </Button>
-              <Box flexGrow={1} />
-              <ColorModeSwitcher justifySelf="flex-end" />
-            </HStack>
-          </Th>
-        </Tr>
-      </Tfoot>
+            </Group>
+          </th>
+        </tr>
+      </tfoot>
     </Table>
   );
 };
