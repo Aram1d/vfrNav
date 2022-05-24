@@ -10,7 +10,7 @@ import {
   Text,
 } from "@mantine/core";
 import dayjs from "dayjs";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Clock, Trash, X } from "tabler-icons-react";
 import * as React from "react";
 import { ComputedLegs } from "../ComputationUtils";
@@ -30,6 +30,17 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
   const { legsHandlers, hideWind, setDate, legs } = useFplStore();
 
   const [rebasePopover, setRebasePopOver] = useState<boolean>(false);
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    if (rebasePopover) {
+      const interval = setInterval(() => {
+        setNow(new Date());
+        return () => clearInterval(interval);
+      }, 10000);
+    }
+  }, [setNow, now, rebasePopover]);
+
   const isSmall = useMediaQuery("(max-width: 1000px)");
 
   return (
@@ -98,7 +109,10 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           <Group>
             <Clock />
             <Text sx={{ width: "80%", fontSize: "14px", marginBottom: "10px" }}>
-              Recaler le point sur l'heure actuelle?{" "}
+              {`Caler la verticale de ${leg.name || "de ce point"} à ${dayjs(
+                now
+              ).format("HH:mm")} `}
+              ?
             </Text>
           </Group>
           <Group>

@@ -151,7 +151,7 @@ export const useFplStore = create<FlightPlanStore>(
       getBaseFactor: () => getBaseFactor(get),
       computeLegs: () => computeLegs(get),
 
-      legs: [],
+      legs: [mkLegState()],
       legsHandlers: {
         append: (leg) =>
           set(

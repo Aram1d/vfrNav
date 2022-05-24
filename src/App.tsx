@@ -7,6 +7,7 @@ import {
   Container,
   ColorScheme,
   ColorSchemeProvider,
+  useMantineTheme,
 } from "@mantine/core";
 import { useMediaQuery, useLocalStorage } from "@mantine/hooks";
 
@@ -14,9 +15,12 @@ export const App = () => {
   const [usedFpl, setUsedFpl] = useState("fpl-1");
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
     key: "vfr-nav-theme",
+    defaultValue: "dark",
   });
   const toggleColorScheme = (value?: ColorScheme) =>
     setColorScheme(value || (colorScheme === "light" ? "dark" : "light"));
+
+  const theme = useMantineTheme();
 
   const isSmall = useMediaQuery("(max-width: 1000px)");
 
@@ -55,7 +59,10 @@ export const App = () => {
           Group: { spacing: isSmall ? "xs" : "md" },
         }}
       >
-        <Container sx={{ minHeight: "100vh", maxWidth: "1200px" }} p={3}>
+        <Container
+          sx={{ minHeight: "100vh", maxWidth: "1200px" }}
+          p={isSmall ? theme.spacing.xs : theme.spacing.md}
+        >
           <FplHeader usedFpl={usedFpl} setUsedFpl={setUsedFpl} />
           <FlightPlanTable />
         </Container>
