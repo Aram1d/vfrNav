@@ -57,6 +57,7 @@ export const App = () => {
           SegmentedControl: { size: isSmall ? "xs" : "md" },
           ActionIcon: { size: isSmall ? "xs" : "md" },
           Group: { spacing: isSmall ? "xs" : "md" },
+          Datepicker: { size: isSmall ? "xs" : "md" },
         }}
       >
         <Container

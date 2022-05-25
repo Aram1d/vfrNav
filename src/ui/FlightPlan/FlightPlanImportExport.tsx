@@ -75,7 +75,7 @@ const FlightPlanImportModal = ({
   onClose: () => void;
 }) => {
   const [fpl, setFpl] = useState<any>(null);
-  const [ajvErr, setAjvErr] = useState<AjvErrors>(null);
+  const [ajvErr, setAjvErr] = useState<AjvErrors | Error[]>(null);
   const theme = useMantineTheme();
 
   useEffect(() => {
@@ -101,6 +101,9 @@ const FlightPlanImportModal = ({
           setFpl(JSON.parse(fileReader.result as string));
           setAjvErr(fplValidator.errors);
         }}
+        onReject={() => {
+          setAjvErr([new Error("Fichier incorrect")]);
+        }}
         accept={["application/json"]}
       >
         {() => DropzoneChildren(theme, { ajvErr, isFplLoaded: Boolean(fpl) })}
@@ -108,7 +111,7 @@ const FlightPlanImportModal = ({
 
       <Group mt={theme.spacing.md}>
         <Button
-          disabled={!fpl && !Boolean(ajvErr)}
+          disabled={!fpl && Boolean(ajvErr)}
           onClick={async () => {
             window.localStorage.setItem(
               `vfr-nav-${fplId}`,
@@ -116,6 +119,7 @@ const FlightPlanImportModal = ({
             );
             //@ts-expect-error types missing for persist
             await useFplStore.persist.rehydrate();
+            onClose();
           }}
         >
           Charger

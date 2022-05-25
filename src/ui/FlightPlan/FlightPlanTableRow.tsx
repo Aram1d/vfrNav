@@ -175,7 +175,7 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
                 legsHandlers.reorder({ from: index, to: index - 1 })
               }
             >
-              Move up
+              Monter
             </Menu.Item>
             <Menu.Item
               icon={<ArrowDown />}
@@ -183,13 +183,13 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
                 legsHandlers.reorder({ from: index, to: index + 1 })
               }
             >
-              Move down
+              Descendre
             </Menu.Item>
             <Menu.Item
               icon={<Trash />}
               onClick={() => legsHandlers.remove(index)}
             >
-              Delete segment
+              Supprimer
             </Menu.Item>
           </Menu>
         ) : (
