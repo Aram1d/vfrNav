@@ -23,6 +23,11 @@ export const App = () => {
   const theme = useMantineTheme();
 
   const isSmall = useMediaQuery("(max-width: 1000px)");
+  const defaultComponentsSize = {
+    defaultProps: {
+      size: isSmall ? "xs" : "md",
+    },
+  };
 
   return (
     <ColorSchemeProvider
@@ -37,27 +42,29 @@ export const App = () => {
           ...(isSmall
             ? {
                 fontSizes: {
-                  xs: 10,
-                  sm: 12,
-                  md: 14,
-                  lg: 16,
-                  xl: 18,
+                  xs: "10px",
+                  sm: "12px",
+                  md: "14px",
+                  lg: "16px",
+                  xl: "18px",
                 },
               }
             : {}),
-        }}
-        defaultProps={{
-          Input: { size: isSmall ? "xs" : "md" },
-          NumberInput: { size: isSmall ? "xs" : "md" },
-          Table: { size: isSmall ? "xs" : "md" },
-          Button: { size: isSmall ? "xs" : "md" },
-          Select: { size: isSmall ? "xs" : "md" },
-          DatePicker: { size: isSmall ? "xs" : "md" },
-          TimeInput: { size: isSmall ? "xs" : "md" },
-          SegmentedControl: { size: isSmall ? "xs" : "md" },
-          ActionIcon: { size: isSmall ? "xs" : "md" },
-          Group: { spacing: isSmall ? "xs" : "md" },
-          Datepicker: { size: isSmall ? "xs" : "md" },
+          components: {
+            Input: defaultComponentsSize,
+            TextInput: defaultComponentsSize,
+            InputWrapper: defaultComponentsSize,
+            NumberInput: defaultComponentsSize,
+            Table: defaultComponentsSize,
+            Button: defaultComponentsSize,
+            Select: defaultComponentsSize,
+            DatePicker: defaultComponentsSize,
+            TimeInput: defaultComponentsSize,
+            SegmentedControl: defaultComponentsSize,
+            ActionIcon: defaultComponentsSize,
+            Group: { defaultProps: { spacing: isSmall ? "xs" : "md" } },
+            DateTimePicker: defaultComponentsSize,
+          },
         }}
       >
         <Container

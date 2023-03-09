@@ -117,7 +117,6 @@ const FlightPlanImportModal = ({
               `vfr-nav-${fplId}`,
               JSON.stringify(fpl)
             );
-            //@ts-expect-error types missing for persist
             await useFplStore.persist.rehydrate();
             onClose();
           }}

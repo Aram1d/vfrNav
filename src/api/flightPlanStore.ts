@@ -1,4 +1,4 @@
-import create from "zustand";
+import { create } from "zustand";
 import produce from "immer";
 import { persist } from "zustand/middleware";
 import { merge } from "lodash-es";
@@ -95,7 +95,7 @@ export type FplPersistantState = {
   version: number;
 };
 
-export const useFplStore = create<FlightPlanStore>(
+export const useFplStore = create<FlightPlanStore>()(
   persist(
     (set, get) => ({
       aircraft: {
@@ -224,7 +224,6 @@ export const useFplStore = create<FlightPlanStore>(
     }),
     {
       name: `vfr-nav-fpl-1`,
-      // @ts-expect-error legs appears to be never[] due to DeepPartial
       partialize: (state) => {
         const {
           aircraft,
@@ -245,7 +244,7 @@ export const useFplStore = create<FlightPlanStore>(
       },
       merge: (persistedState, currentState) => ({
         ...currentState,
-        ...persistedState,
+        ...(persistedState as Record<string, any>),
         legsHandlers: currentState.legsHandlers,
       }),
     }

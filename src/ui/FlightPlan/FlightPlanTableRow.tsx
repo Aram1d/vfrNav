@@ -53,7 +53,7 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
             value={leg.alt.desired}
             onChange={(desired = 1000) =>
               legsHandlers.setLeg(index, {
-                alt: { desired },
+                alt: { desired: desired || 1000 },
               })
             }
             size="xs"
@@ -65,9 +65,10 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
             value={leg.alt.minimal}
             defaultValue={500}
             onChange={(minimal = 500) =>
-              legsHandlers.setLeg(index, { alt: { minimal } })
+              legsHandlers.setLeg(index, { alt: { minimal: minimal || 500 } })
             }
             size="xs"
+            styles={(t) => ({ input: { color: t.colors.red[6] } })}
           />
         </Stack>
       </td>
@@ -78,7 +79,7 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           max={360}
           value={leg.magneticRoute}
           onChange={(magneticRoute = 0) =>
-            legsHandlers.setLeg(index, { magneticRoute })
+            legsHandlers.setLeg(index, { magneticRoute: magneticRoute || 0 })
           }
         />
       </td>
@@ -88,7 +89,9 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           sx={fiveCharsInputWidth}
           min={0}
           value={leg.distance}
-          onChange={(distance = 0) => legsHandlers.setLeg(index, { distance })}
+          onChange={(distance = 0) =>
+            legsHandlers.setLeg(index, { distance: distance || 0 })
+          }
         />
       </td>
       <td>{leg.duration || "--"}</td>
@@ -97,39 +100,43 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
         <Popover
           opened={rebasePopover}
           onClose={() => setRebasePopOver(false)}
-          target={
-            <Button variant="subtle" onClick={() => setRebasePopOver(true)}>
-              {leg.reachDate.format("HH:mm") || "-- : --"}
-            </Button>
-          }
           width={270}
           position="bottom"
           withArrow
         >
-          <Group>
-            <Clock />
-            <Text sx={{ width: "80%", fontSize: "14px", marginBottom: "10px" }}>
-              {`Caler la verticale de ${leg.name || "de ce point"} à ${dayjs(
-                now
-              ).format("HH:mm")} `}
-              ?
-            </Text>
-          </Group>
-          <Group>
-            <Button
-              onClick={() => {
-                setDate(
-                  dayjs(new Date())
-                    .subtract(leg.cumulatedTimeToWPT, "minutes")
-                    .toDate()
-                );
-                setRebasePopOver(false);
-              }}
-            >
-              Recaler
+          <Popover.Target>
+            <Button variant="subtle" onClick={() => setRebasePopOver(true)}>
+              {leg.reachDate.format("HH:mm") || "-- : --"}
             </Button>
-            <Button onClick={() => setRebasePopOver(false)}>Annuler</Button>
-          </Group>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Group>
+              <Clock />
+              <Text
+                sx={{ width: "80%", fontSize: "14px", marginBottom: "10px" }}
+              >
+                {`Caler la verticale de ${leg.name || "ce point"} à ${dayjs(
+                  now
+                ).format("HH:mm")} `}
+                ?
+              </Text>
+            </Group>
+            <Group>
+              <Button
+                onClick={() => {
+                  setDate(
+                    dayjs(new Date())
+                      .subtract(leg.cumulatedTimeToWPT, "minutes")
+                      .toDate()
+                  );
+                  setRebasePopOver(false);
+                }}
+              >
+                Recaler
+              </Button>
+              <Button onClick={() => setRebasePopOver(false)}>Annuler</Button>
+            </Group>
+          </Popover.Dropdown>
         </Popover>
       </td>
       {hideWind ? (
@@ -150,7 +157,9 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
               max={360}
               value={leg.wind.direction}
               onChange={(direction = 0) =>
-                legsHandlers.setLeg(index, { wind: { direction } })
+                legsHandlers.setLeg(index, {
+                  wind: { direction: direction || 0 },
+                })
               }
             />
           </td>
@@ -160,7 +169,9 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
               min={0}
               value={leg.wind.velocity}
               onChange={(velocity = 0) =>
-                legsHandlers.setLeg(index, { wind: { velocity } })
+                legsHandlers.setLeg(index, {
+                  wind: { velocity: velocity || 0 },
+                })
               }
             />
           </td>
