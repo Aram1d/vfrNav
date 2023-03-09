@@ -56,7 +56,7 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
       <Grid.Col span={3}>
         <InputWrapper
           label="Vp CRZ (Kts): "
-          description={`Fb: ${getBaseFactor()}`}
+          description={`Fb: ${getBaseFactor().toFixed(3)}`}
         >
           <NumberInput
             hideControls
