@@ -13,10 +13,10 @@ import dayjs from "dayjs";
 import { ChangeEvent, useEffect, useState } from "react";
 import { ArrowDown, ArrowUp, Clock, Trash, X } from "tabler-icons-react";
 import * as React from "react";
-import { ComputedLegs } from "../ComputationUtils";
+import { ComputedLegs } from "../../api/computationUtils";
 import { useFplStore } from "../../api/flightPlanStore";
 import { fiveCharsInputWidth, threeCharsInputWidth } from "./FlightPlanTable";
-import { useMediaQuery } from "@mantine/hooks";
+import { useSmallScreen } from "../../api/utils";
 
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
@@ -41,7 +41,7 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
     }
   }, [setNow, now, rebasePopover]);
 
-  const isSmall = useMediaQuery("(max-width: 1000px)");
+  const isSmall = useSmallScreen();
 
   return (
     <tr key={index}>

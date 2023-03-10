@@ -1,7 +1,7 @@
 import { Group, MantineTheme, Text } from "@mantine/core";
 import { Upload } from "tabler-icons-react";
-import { AjvErrors } from "../../api/FlightPlanValidationSchema";
-import { useMediaQuery } from "@mantine/hooks";
+import { AjvErrors } from "../../api/flightPlanValidationSchema";
+import { useSmallScreen } from "../../api/utils";
 
 function getIconColor(
   theme: MantineTheme,
@@ -20,7 +20,7 @@ export const DropzoneChildren = (
   theme: MantineTheme,
   { ajvErr, isFplLoaded }: { ajvErr: AjvErrors | Error[]; isFplLoaded: boolean }
 ) => {
-  const isSmall = useMediaQuery("(max-width: 1000px)");
+  const isSmall = useSmallScreen();
   return (
     <Group
       position="center"

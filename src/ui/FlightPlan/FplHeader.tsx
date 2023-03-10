@@ -2,31 +2,21 @@ import * as React from "react";
 import { useFplStore } from "../../api/flightPlanStore";
 import {
   ActionIcon,
-  Button,
   Grid,
-  Group,
   Input,
-  Modal,
   NumberInput,
   SegmentedControl,
-  Select,
   SimpleGrid,
   Stack,
   TextInput,
   useMantineColorScheme,
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
-import { FlightPlanImportExport } from "./FlightPlanImportExport";
 import { MoonStars, Sun } from "tabler-icons-react";
-import { useDisclosure } from "@mantine/hooks";
-import { useState } from "react";
+import { FlightPlanSelect } from "./FlightPlanSelect";
+import { useSmallScreen } from "../../api/utils";
 
-export type FplHeaderProps = {
-  usedFpl: string;
-  setUsedFpl: (fplId: string) => void;
-};
-
-export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
+export const FplHeader = () => {
   const {
     getDate,
     departureAirfield,
@@ -42,38 +32,12 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
     toggleHideWind,
   } = useFplStore();
 
-  const [fplList, setFplList] = useState<string[]>(getFplList());
-
-  const [addFpl, { close, open }] = useDisclosure(false);
-  const [addFplName, setAddFplName] = React.useState<string>("");
-
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
+  const isSmall = useSmallScreen();
 
   return (
     <>
-      <Modal title="Ajouter un plan de vol" opened={addFpl} onClose={close}>
-        <Stack>
-          <TextInput
-            label="Nom du nouveau plan de vol"
-            value={addFplName}
-            onChange={(e) => setAddFplName(e.currentTarget.value)}
-          />
-          <Group>
-            <Button
-              disabled={!addFplName}
-              onClick={() => {
-                loadFPL(addFplName, setUsedFpl);
-                setFplList(getFplList());
-                setAddFplName("");
-                close();
-              }}
-            >
-              Ajouter
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
       <Grid columns={24}>
         <Grid.Col sx={{ minWidth: 84 }} span={3}>
           <TextInput
@@ -115,60 +79,24 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
             </SimpleGrid>
           </Input.Wrapper>
         </Grid.Col>
-        <Grid.Col span={6}>
-          <Input.Wrapper
+        <Grid.Col span={4}>
+          <DateTimePicker
             label="Date et heure: "
             description="du début de la navigation"
-          >
-            <Group>
-              <DateTimePicker
-                onChange={(date) => setDate(date as Date)}
-                value={getDate()}
-                sx={(t) => ({
-                  marginTop: `${parseFloat(t.spacing.xs) / 2}rem`,
-                  position: "relative",
-                })}
-              />
-            </Group>
-          </Input.Wrapper>
+            onChange={(date) => setDate(date as Date)}
+            value={getDate()}
+          />
         </Grid.Col>
-        <Grid.Col span={4}>
-          <Stack>
-            <Input.Wrapper
-              label="Selection FPL"
-              description={<FlightPlanImportExport fplId={usedFpl} />}
-            >
-              <Select
-                mt={6}
-                placeholder="Selection FPL"
-                allowDeselect={false}
-                value={usedFpl}
-                onChange={(value) => {
-                  if (value === "addFpl") {
-                    open();
-                    return;
-                  }
-                  loadFPL(value as string, setUsedFpl);
-                }}
-                data={[
-                  ...fplList.map((val) => ({
-                    value: val,
-                    label: "FPL " + val,
-                  })),
-                  { value: "addFpl", label: "Ajouter un FPL" },
-                ]}
-              />
-            </Input.Wrapper>
-          </Stack>
+        <Grid.Col span={6}>
+          <FlightPlanSelect />
         </Grid.Col>
         <Grid.Col span={3}>
           <Stack
             sx={{
               height: "100%",
-              paddingTop: "5px",
-              justifyContent: "flex-end",
+              gap: 0,
+              justifyContent: "space-between",
               alignItems: "flex-end",
-              gap: "11px",
             }}
           >
             <ActionIcon
@@ -186,6 +114,7 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
                 { value: "wind", label: "Vent" },
                 { value: "title", label: "Point" },
               ]}
+              sx={isSmall ? { top: "2px" } : {}}
             />
           </Stack>
         </Grid.Col>
@@ -193,16 +122,3 @@ export const FplHeader = ({ usedFpl, setUsedFpl }: FplHeaderProps) => {
     </>
   );
 };
-
-const loadFPL = (value: string, setUsedFpl: (fplName: string) => void) => {
-  useFplStore.persist.setOptions({
-    name: `vfr-nav-fpl-${value}`,
-  });
-  useFplStore.persist.rehydrate();
-  setUsedFpl(value);
-};
-
-const getFplList = () =>
-  Object.keys(window.localStorage)
-    .filter((key) => key.startsWith("vfr-nav-fpl-"))
-    .map((k) => k.replace(/vfr-nav-fpl-/, ""));

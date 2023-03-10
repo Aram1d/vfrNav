@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { useFplStore } from "../../api/flightPlanStore";
-import dayjs from "dayjs";
-import FileDownloader from "js-file-downloader";
-import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+
 import {
   ActionIcon,
   Button,
@@ -12,10 +9,16 @@ import {
   Text,
   useMantineTheme,
 } from "@mantine/core";
-import { FileDownload, FileUpload } from "tabler-icons-react";
+import { useDisclosure } from "@mantine/hooks";
 import { Dropzone } from "@mantine/dropzone";
+import { FileDownload, FileUpload } from "tabler-icons-react";
+import { useFplStore } from "../../api/flightPlanStore";
+import dayjs from "dayjs";
+import FileDownloader from "js-file-downloader";
+
 import { DropzoneChildren } from "../ImportDropzone/DropzoneChildren";
-import { AjvErrors, fplValidator } from "../../api/FlightPlanValidationSchema";
+import { AjvErrors, fplValidator } from "../../api/flightPlanValidationSchema";
+import { useSmallScreen } from "../../api/utils";
 
 type FlightPlanImportExportProps = {
   fplId: string;
@@ -26,7 +29,7 @@ export const FlightPlanImportExport = ({
 }: FlightPlanImportExportProps) => {
   const { departureAirfield, arrivalAirfield, date } = useFplStore();
   const [isOpened, handlers] = useDisclosure(false);
-  const isSmall = useMediaQuery("(max-width: 1000px)");
+  const isSmall = useSmallScreen();
   const textSX = { fontSize: isSmall ? 8 : 14 };
   return (
     <>

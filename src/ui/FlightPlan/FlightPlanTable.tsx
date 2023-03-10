@@ -2,8 +2,8 @@ import { useFplStore } from "../../api/flightPlanStore";
 
 import * as React from "react";
 import { Button, Group, Table } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
 import { FlightPlanTableRow } from "./FlightPlanTableRow";
+import { useSmallScreen } from "../../api/utils";
 
 export const threeCharsInputWidth = { width: "6em" };
 export const fiveCharsInputWidth = { width: "8em" };
@@ -13,7 +13,7 @@ export const FlightPlanTable = () => {
 
   const legs = computeLegs();
 
-  const isWide = useMediaQuery("(min-width: 1000px)");
+  const isWide = !useSmallScreen();
 
   return (
     <Table

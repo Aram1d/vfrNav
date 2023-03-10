@@ -1,18 +1,17 @@
 import * as React from "react";
-import { useState } from "react";
-import { FplHeader } from "./ui/FlightPlan/FplHeader";
-import { FlightPlanTable } from "./ui/FlightPlan/FlightPlanTable";
 import {
-  MantineProvider,
-  Container,
   ColorScheme,
   ColorSchemeProvider,
+  Container,
+  MantineProvider,
   useMantineTheme,
 } from "@mantine/core";
-import { useMediaQuery, useLocalStorage } from "@mantine/hooks";
+import { useLocalStorage } from "@mantine/hooks";
+import { FplHeader } from "./ui/FlightPlan/FplHeader";
+import { FlightPlanTable } from "./ui/FlightPlan/FlightPlanTable";
+import { useSmallScreen } from "./api/utils";
 
 export const App = () => {
-  const [usedFpl, setUsedFpl] = useState("fpl-1");
   const [colorScheme, setColorScheme] = useLocalStorage<ColorScheme>({
     key: "vfr-nav-theme",
     defaultValue: "dark",
@@ -22,7 +21,7 @@ export const App = () => {
 
   const theme = useMantineTheme();
 
-  const isSmall = useMediaQuery("(max-width: 1000px)");
+  const isSmall = useSmallScreen();
   const defaultComponentsSize = {
     defaultProps: {
       size: isSmall ? "xs" : "md",
@@ -61,7 +60,6 @@ export const App = () => {
             DatePicker: defaultComponentsSize,
             TimeInput: defaultComponentsSize,
             SegmentedControl: defaultComponentsSize,
-            ActionIcon: defaultComponentsSize,
             Group: { defaultProps: { spacing: isSmall ? "xs" : "md" } },
             DateTimePicker: defaultComponentsSize,
           },
@@ -71,7 +69,7 @@ export const App = () => {
           sx={{ minHeight: "100vh", maxWidth: "1200px" }}
           p={isSmall ? theme.spacing.xs : theme.spacing.md}
         >
-          <FplHeader usedFpl={usedFpl} setUsedFpl={setUsedFpl} />
+          <FplHeader />
           <FlightPlanTable />
         </Container>
       </MantineProvider>

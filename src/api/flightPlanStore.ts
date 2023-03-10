@@ -2,11 +2,14 @@ import { create } from "zustand";
 import produce from "immer";
 import { persist } from "zustand/middleware";
 import { merge } from "lodash-es";
+import { ComputedLegs, computeLegs, getBaseFactor } from "./computationUtils";
 import {
-  ComputedLegs,
-  computeLegs,
-  getBaseFactor,
-} from "../ui/ComputationUtils";
+  FPL_PREFIX,
+  getDefaultFplKey,
+  getFplKey,
+  getFplListKeys,
+  SEL_FPL_KEY,
+} from "./utils";
 
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
@@ -223,7 +226,10 @@ export const useFplStore = create<FlightPlanStore>()(
         ),
     }),
     {
-      name: `vfr-nav-fpl-1`,
+      name: (() => {
+        const fpl1 = getFplListKeys()?.[0];
+        return fpl1 ? fpl1 : "vfr-nav-fpl-1";
+      })(),
       partialize: (state) => {
         const {
           aircraft,
@@ -250,3 +256,71 @@ export const useFplStore = create<FlightPlanStore>()(
     }
   )
 );
+
+// FPL Key store
+
+interface FplKeyStore {
+  selectedFplKey: string;
+  fplList: { value: string; label: string }[];
+  loadFpl: (fplKey: string) => void;
+  addFpl: (name: string) => void;
+  editFpl: (newName: string) => void;
+  deleteFpl: () => void;
+}
+
+export const useFplKeyStore = create<FplKeyStore>()((set, get) => {
+  function mapToSelectOption(keys: string[]) {
+    return keys.map((value) => ({
+      value,
+      label: value.replace(new RegExp(FPL_PREFIX), ""),
+    }));
+  }
+
+  const fplKeysList = getFplListKeys();
+  return {
+    selectedFplKey: getDefaultFplKey(fplKeysList),
+    fplList: mapToSelectOption(fplKeysList),
+
+    loadFpl: (fplKey: string) => {
+      useFplStore.persist.setOptions({
+        name: fplKey,
+      });
+      useFplStore.persist.rehydrate();
+      set((state) => ({ ...state, selectedFplKey: fplKey }));
+      window.localStorage.setItem(SEL_FPL_KEY, fplKey);
+    },
+
+    addFpl: (name) => {
+      const fplKey = getFplKey(name);
+      get().loadFpl(fplKey);
+
+      set((state) => ({
+        ...state,
+        selectedFplKey: fplKey,
+        fplList: mapToSelectOption(getFplListKeys()),
+      }));
+    },
+    editFpl(newName: string) {
+      const actualKey = useFplStore.persist.getOptions().name as string;
+      get().loadFpl(getFplKey(newName));
+      window.localStorage.removeItem(actualKey);
+      set((state) => ({
+        ...state,
+        fplList: mapToSelectOption(getFplListKeys()),
+      }));
+    },
+
+    deleteFpl: () => {
+      const actualName = useFplStore.persist.getOptions().name as string;
+      const newLoadedFplKey = getFplListKeys().filter(
+        (fpl) => fpl !== getFplKey(actualName)
+      )[0];
+      window.localStorage.removeItem(actualName);
+      get().loadFpl(newLoadedFplKey);
+      set((state) => ({
+        ...state,
+        fplList: mapToSelectOption(getFplListKeys()),
+      }));
+    },
+  };
+});
