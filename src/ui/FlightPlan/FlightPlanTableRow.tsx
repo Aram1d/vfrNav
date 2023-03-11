@@ -7,6 +7,7 @@ import {
   Popover,
   Stack,
   Text,
+  useMantineTheme,
 } from "@mantine/core";
 import dayjs from "dayjs";
 import * as React from "react";
@@ -38,8 +39,14 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
   const [rebasePopover, setRebasePopOver] = useState<boolean>(false);
   const [now, setNow] = useState(new Date());
 
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: leg.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    activeIndex,
+  } = useSortable({ id: leg.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -56,9 +63,37 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
   }, [setNow, now, rebasePopover]);
 
   const isSmall = useSmallScreen();
+  const theme = useMantineTheme();
+  const draggedRowStyles =
+    theme.colorScheme === "dark"
+      ? {
+          background: theme.colors.dark[6],
+          outline: `1px solid ${theme.colors.dark[4]}`,
+        }
+      : {
+          background: theme.colors.gray[1],
+          outline: `1px solid ${theme.colors.gray[2]}`,
+        };
 
   return (
-    <tr key={index} ref={setNodeRef} {...attributes} style={style}>
+    <tr
+      key={index}
+      ref={setNodeRef}
+      {...attributes}
+      style={{
+        ...style,
+        marginLeft: -5,
+        ...(index === activeIndex
+          ? {
+              ...draggedRowStyles,
+              boxShadow: theme.shadows.sm,
+              borderRadius: theme.radius.sm,
+              position: "relative",
+              zIndex: 1000,
+            }
+          : {}),
+      }}
+    >
       <td>
         <Stack>
           <NumberInput

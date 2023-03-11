@@ -55,14 +55,6 @@ export const FlightPlanTable = () => {
       <Table
         horizontalSpacing={isWide ? "md" : "sm"}
         verticalSpacing={isWide ? "md" : "sm"}
-        sx={{
-          "tr > td:first-child, th:first-child": {
-            paddingLeft: 0,
-          },
-          "tr > td:last-child, th:last-child": {
-            paddingRight: 0,
-          },
-        }}
       >
         <thead>
           <tr>

@@ -66,8 +66,9 @@ export const App = () => {
         }}
       >
         <Container
-          sx={{ minHeight: "100vh", maxWidth: "1200px" }}
-          p={isSmall ? theme.spacing.xs : theme.spacing.md}
+          sx={{ minHeight: "100vh", width: "100vw", maxWidth: "100rem" }}
+          py={isSmall ? theme.spacing.xs : theme.spacing.md}
+          px={0}
         >
           <FplHeader />
           <FlightPlanTable />
