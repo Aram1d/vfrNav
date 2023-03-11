@@ -2,7 +2,13 @@
   "name": "vfr-nav",
   "version": "0.2.0",
   "private": true,
-  "dependencies": {
+  "devDependencies": {
+    "@types/jest": "^25.0.0",
+    "@types/lodash-es": "^4.17.6",
+    "@types/node": "^12.0.0",
+    "@types/react": "^16.9.0",
+    "@types/react-datepicker": "^4.3.4",
+    "@types/react-dom": "^16.9.0",
     "@dnd-kit/core": "^6.0.8",
     "@dnd-kit/sortable": "^7.0.2",
     "@emotion/react": "^11.10.6",
@@ -35,6 +41,7 @@
     "uuid": "^9.0.0",
     "vite": "^4.1.4",
     "vite-plugin-node-polyfills": "^0.7.0",
+    "vite-plugin-pwa": "^0.14.4",
     "workbox-background-sync": "^6.4.2",
     "workbox-broadcast-update": "^6.4.2",
     "workbox-cacheable-response": "^6.4.2",
@@ -69,13 +76,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/jest": "^25.0.0",
-    "@types/lodash-es": "^4.17.6",
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.0",
-    "@types/react-datepicker": "^4.3.4",
-    "@types/react-dom": "^16.9.0"
   }
 }

@@ -14,11 +14,7 @@ import {
 import { DateTimePicker } from "@mantine/dates";
 import { MoonStars, Sun } from "tabler-icons-react";
 import { FlightPlanSelect } from "./FlightPlanSelect";
-import {
-  nanifyEmptyString,
-  stringifyNaN,
-  useSmallScreen,
-} from "../../api/utils";
+import { nanifyEmptyString, stringifyNaN } from "../../api/utils";
 
 export const FplHeader = () => {
   const {
@@ -38,11 +34,10 @@ export const FplHeader = () => {
 
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const dark = colorScheme === "dark";
-  const isSmall = useSmallScreen();
 
   return (
-    <Grid columns={24} mx={0}>
-      <Grid.Col sx={{ minWidth: 84 }} span={3}>
+    <Grid columns={24} mx="md">
+      <Grid.Col sx={{ minWidth: 84 }} span={3} pl={0}>
         <TextInput
           label="Appareil:"
           description="immatriculation"
@@ -79,7 +74,7 @@ export const FplHeader = () => {
           </SimpleGrid>
         </Input.Wrapper>
       </Grid.Col>
-      <Grid.Col span={4}>
+      <Grid.Col span={5}>
         <DateTimePicker
           label="Date et heure: "
           description="du début de la navigation"
@@ -87,10 +82,10 @@ export const FplHeader = () => {
           value={getDate()}
         />
       </Grid.Col>
-      <Grid.Col span={6}>
+      <Grid.Col span={5}>
         <FlightPlanSelect />
       </Grid.Col>
-      <Grid.Col span={3}>
+      <Grid.Col span={3} pr={0}>
         <Stack
           sx={{
             height: "100%",
@@ -114,7 +109,7 @@ export const FplHeader = () => {
               { value: "wind", label: "Vent" },
               { value: "title", label: "Point" },
             ]}
-            sx={isSmall ? { top: "2px" } : {}}
+            sx={{ top: "2px" }}
           />
         </Stack>
       </Grid.Col>
