@@ -54,7 +54,7 @@ const schema: JTDSchemaType<FplPersistantState> = {
       },
       optionalProperties: {
         //@ts-expect-error
-        uuid: { type: "string" },
+        id: { type: "string" },
       },
     },
     version: { type: "float64" },

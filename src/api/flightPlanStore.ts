@@ -11,7 +11,6 @@ import {
   getFplListKeys,
   SEL_FPL_KEY,
 } from "./utils";
-import { fplValidatorV0 } from "./flightPlanValidationSchema";
 
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
@@ -257,17 +256,13 @@ export const useFplStore = create<FlightPlanStore>()(
       version: 1,
       migrate: (persistedState, version) => {
         if (version === 0) {
-          const verifiedState = fplValidatorV0(persistedState)
-            ? (persistedState as any as FlightPlanStore)
-            : null;
-
-          if (!verifiedState) throw new Error("Données corrompues");
-
-          verifiedState.legs = verifiedState.legs.map((leg) => ({
+          (persistedState as FlightPlanStore).legs = (
+            persistedState as FlightPlanStore
+          ).legs.map((leg) => ({
             ...leg,
             id: uuidv4(),
           }));
-          return verifiedState as any;
+          return persistedState as any;
         }
       },
     }
