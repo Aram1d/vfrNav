@@ -3,20 +3,26 @@ import {
   Button,
   Group,
   Input,
-  Menu,
   NumberInput,
   Popover,
   Stack,
   Text,
 } from "@mantine/core";
 import dayjs from "dayjs";
-import { ChangeEvent, useEffect, useState } from "react";
-import { ArrowDown, ArrowUp, Clock, Trash, X } from "tabler-icons-react";
 import * as React from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { Clock, DragDrop2, X } from "tabler-icons-react";
 import { ComputedLegs } from "../../api/computationUtils";
 import { useFplStore } from "../../api/flightPlanStore";
 import { fiveCharsInputWidth, threeCharsInputWidth } from "./FlightPlanTable";
-import { useSmallScreen } from "../../api/utils";
+import {
+  nanifyEmptyString,
+  stringifyNaN,
+  useSmallScreen,
+} from "../../api/utils";
+
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 type ArrayElement<ArrayType extends readonly unknown[]> =
   ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
@@ -27,10 +33,18 @@ type FlightPlanTableRowProps = {
 };
 
 export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
-  const { legsHandlers, hideWind, setDate, legs } = useFplStore();
+  const { legsHandlers, hideWind, setDate } = useFplStore();
 
   const [rebasePopover, setRebasePopOver] = useState<boolean>(false);
   const [now, setNow] = useState(new Date());
+
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: leg.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   useEffect(() => {
     if (rebasePopover) {
@@ -44,16 +58,16 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
   const isSmall = useSmallScreen();
 
   return (
-    <tr key={index}>
+    <tr key={index} ref={setNodeRef} {...attributes} style={style}>
       <td>
         <Stack>
           <NumberInput
             sx={fiveCharsInputWidth}
             step={100}
-            value={leg.alt.desired}
-            onChange={(desired = 1000) =>
+            value={stringifyNaN(leg.alt.desired)}
+            onChange={(desired) =>
               legsHandlers.setLeg(index, {
-                alt: { desired: desired || 1000 },
+                alt: { desired: nanifyEmptyString(desired) },
               })
             }
             size="xs"
@@ -62,10 +76,12 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           <NumberInput
             sx={fiveCharsInputWidth}
             step={100}
-            value={leg.alt.minimal}
+            value={stringifyNaN(leg.alt.minimal)}
             defaultValue={500}
-            onChange={(minimal = 500) =>
-              legsHandlers.setLeg(index, { alt: { minimal: minimal || 500 } })
+            onChange={(minimal) =>
+              legsHandlers.setLeg(index, {
+                alt: { minimal: nanifyEmptyString(minimal) },
+              })
             }
             size="xs"
             styles={(t) => ({ input: { color: t.colors.red[6] } })}
@@ -77,26 +93,30 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           sx={threeCharsInputWidth}
           min={0}
           max={360}
-          value={leg.magneticRoute}
-          onChange={(magneticRoute = 0) =>
-            legsHandlers.setLeg(index, { magneticRoute: magneticRoute || 0 })
+          value={stringifyNaN(leg.magneticRoute)}
+          onChange={(magneticRoute) =>
+            legsHandlers.setLeg(index, {
+              magneticRoute: nanifyEmptyString(magneticRoute),
+            })
           }
         />
       </td>
-      <td>{leg.magneticCourse || "-  -  -"}</td>
+      <td style={{ textAlign: "center" }}>{leg.magneticCourse || "-  -  -"}</td>
       <td>
         <NumberInput
           sx={fiveCharsInputWidth}
           min={0}
-          value={leg.distance}
-          onChange={(distance = 0) =>
-            legsHandlers.setLeg(index, { distance: distance || 0 })
+          value={stringifyNaN(leg.distance)}
+          onChange={(distance) =>
+            legsHandlers.setLeg(index, {
+              distance: nanifyEmptyString(distance),
+            })
           }
         />
       </td>
-      <td>{leg.duration || "--"}</td>
-      <td>{leg.correctedDuration || "--"}</td>
-      <td>
+      <td style={{ textAlign: "center" }}>{leg.duration || "--"}</td>
+      <td style={{ textAlign: "center" }}>{leg.correctedDuration || "--"}</td>
+      <td data-no-dnd="true">
         <Popover
           opened={rebasePopover}
           onClose={() => setRebasePopOver(false)}
@@ -105,7 +125,13 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
           withArrow
         >
           <Popover.Target>
-            <Button variant="subtle" onClick={() => setRebasePopOver(true)}>
+            <Button
+              variant="subtle"
+              onClick={(e) => {
+                e.stopPropagation();
+                setRebasePopOver(true);
+              }}
+            >
               {leg.reachDate.format("HH:mm") || "-- : --"}
             </Button>
           </Popover.Target>
@@ -155,10 +181,10 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
               sx={threeCharsInputWidth}
               min={0}
               max={360}
-              value={leg.wind.direction}
-              onChange={(direction = 0) =>
+              value={stringifyNaN(leg.wind.direction)}
+              onChange={(direction) =>
                 legsHandlers.setLeg(index, {
-                  wind: { direction: direction || 0 },
+                  wind: { direction: nanifyEmptyString(direction) },
                 })
               }
             />
@@ -167,10 +193,10 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
             <NumberInput
               sx={threeCharsInputWidth}
               min={0}
-              value={leg.wind.velocity}
-              onChange={(velocity = 0) =>
+              value={stringifyNaN(leg.wind.velocity)}
+              onChange={(velocity) =>
                 legsHandlers.setLeg(index, {
-                  wind: { velocity: velocity || 0 },
+                  wind: { velocity: nanifyEmptyString(velocity) },
                 })
               }
             />
@@ -178,62 +204,17 @@ export const FlightPlanTableRow = ({ index, leg }: FlightPlanTableRowProps) => {
         </>
       )}
       <td>
-        {isSmall ? (
-          <Menu>
-            <Menu.Item
-              icon={<ArrowUp />}
-              onClick={() =>
-                legsHandlers.reorder({ from: index, to: index - 1 })
-              }
-            >
-              Monter
-            </Menu.Item>
-            <Menu.Item
-              icon={<ArrowDown />}
-              onClick={() =>
-                legsHandlers.reorder({ from: index, to: index + 1 })
-              }
-            >
-              Descendre
-            </Menu.Item>
-            <Menu.Item
-              icon={<Trash />}
-              onClick={() => legsHandlers.remove(index)}
-            >
-              Supprimer
-            </Menu.Item>
-          </Menu>
-        ) : (
-          <Group sx={{ minWidth: "4em" }}>
-            <ActionIcon
-              variant="hover"
-              onClick={() => legsHandlers.remove(index)}
-            >
-              <X />
-            </ActionIcon>
-
-            <Stack>
-              <ActionIcon
-                variant="hover"
-                disabled={index === 0}
-                onClick={() =>
-                  legsHandlers.reorder({ from: index, to: index - 1 })
-                }
-              >
-                <ArrowUp />
-              </ActionIcon>
-              <ActionIcon
-                variant="hover"
-                disabled={index === legs.length - 1}
-                onClick={() =>
-                  legsHandlers.reorder({ from: index, to: index + 1 })
-                }
-              >
-                <ArrowDown />
-              </ActionIcon>
-            </Stack>
-          </Group>
-        )}
+        <Group sx={{ minWidth: "4em" }}>
+          <ActionIcon
+            onClick={() => legsHandlers.remove(index)}
+            size={isSmall ? "lg" : "xl"}
+          >
+            <X />
+          </ActionIcon>
+          <ActionIcon {...listeners} size={isSmall ? "lg" : "xl"}>
+            <DragDrop2 />
+          </ActionIcon>
+        </Group>
       </td>
     </tr>
   );

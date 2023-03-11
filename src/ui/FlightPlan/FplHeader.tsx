@@ -14,7 +14,11 @@ import {
 import { DateTimePicker } from "@mantine/dates";
 import { MoonStars, Sun } from "tabler-icons-react";
 import { FlightPlanSelect } from "./FlightPlanSelect";
-import { useSmallScreen } from "../../api/utils";
+import {
+  nanifyEmptyString,
+  stringifyNaN,
+  useSmallScreen,
+} from "../../api/utils";
 
 export const FplHeader = () => {
   const {
@@ -54,8 +58,10 @@ export const FplHeader = () => {
             label="Vp CRZ (Kts): "
             description={`Fb: ${getBaseFactor().toFixed(3)}`}
             hideControls
-            value={aircraft.cruiseSpeed}
-            onChange={(speed) => setAircraftCruiseSpeed(speed || 0)}
+            value={stringifyNaN(aircraft.cruiseSpeed)}
+            onChange={(speed) =>
+              setAircraftCruiseSpeed(nanifyEmptyString(speed))
+            }
           />
         </Grid.Col>
         <Grid.Col span={5}>

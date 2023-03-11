@@ -17,7 +17,10 @@ import dayjs from "dayjs";
 import FileDownloader from "js-file-downloader";
 
 import { DropzoneChildren } from "../ImportDropzone/DropzoneChildren";
-import { AjvErrors, fplValidator } from "../../api/flightPlanValidationSchema";
+import {
+  AjvErrors,
+  fplValidatorV0,
+} from "../../api/flightPlanValidationSchema";
 import { useSmallScreen } from "../../api/utils";
 
 type FlightPlanImportExportProps = {
@@ -41,7 +44,7 @@ export const FlightPlanImportExport = ({
           size={14}
           sx={{ width: "auto" }}
           onClick={async () => {
-            const fpl = window.localStorage.getItem(`vfr-nav-${fplId}`);
+            const fpl = window.localStorage.getItem(fplId);
             if (!fpl) return;
 
             const filename = `${departureAirfield.icao}-${
@@ -102,7 +105,7 @@ const FlightPlanImportModal = ({
           });
 
           setFpl(JSON.parse(fileReader.result as string));
-          setAjvErr(fplValidator.errors);
+          setAjvErr(fplValidatorV0.errors);
         }}
         onReject={() => {
           setAjvErr([new Error("Fichier incorrect")]);
@@ -116,10 +119,7 @@ const FlightPlanImportModal = ({
         <Button
           disabled={!fpl && Boolean(ajvErr)}
           onClick={async () => {
-            window.localStorage.setItem(
-              `vfr-nav-${fplId}`,
-              JSON.stringify(fpl)
-            );
+            window.localStorage.setItem(fplId, JSON.stringify(fpl));
             await useFplStore.persist.rehydrate();
             onClose();
           }}
@@ -127,7 +127,7 @@ const FlightPlanImportModal = ({
           Charger
         </Button>
         <Button variant="outline" mr={3} onClick={onClose}>
-          Close
+          Annuler
         </Button>
       </Group>
     </Modal>

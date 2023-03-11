@@ -28,6 +28,7 @@ const schema: JTDSchemaType<FplPersistantState> = {
         },
         legs: {
           elements: {
+            //@ts-expect-error
             properties: {
               name: { type: "string" },
               alt: {
@@ -51,6 +52,10 @@ const schema: JTDSchemaType<FplPersistantState> = {
           type: "boolean",
         },
       },
+      optionalProperties: {
+        //@ts-expect-error
+        uuid: { type: "string" },
+      },
     },
     version: { type: "float64" },
   },
@@ -63,4 +68,4 @@ export type AjvErrors =
 
 export const ajv = new Ajv();
 
-export const fplValidator = ajv.compile(schema);
+export const fplValidatorV0 = ajv.compile(schema);

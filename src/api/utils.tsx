@@ -47,3 +47,11 @@ export const getDefaultFplKey = (preLoadedkeys?: string[]) => {
 
   return keys.find((k) => k === selected) || keys[0] || DEFAULT_FPL;
 };
+
+export function nanifyEmptyString(number: number | "") {
+  return number === "" ? NaN : number;
+}
+
+export function stringifyNaN(number: number) {
+  return isNaN(number) ? "" : number;
+}

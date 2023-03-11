@@ -2,6 +2,7 @@ import { create } from "zustand";
 import produce from "immer";
 import { persist } from "zustand/middleware";
 import { merge } from "lodash-es";
+import { v4 as uuidv4 } from "uuid";
 import { ComputedLegs, computeLegs, getBaseFactor } from "./computationUtils";
 import {
   FPL_PREFIX,
@@ -10,11 +11,13 @@ import {
   getFplListKeys,
   SEL_FPL_KEY,
 } from "./utils";
+import { fplValidatorV0 } from "./flightPlanValidationSchema";
 
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
 export interface Leg {
   name: string;
+  id: string;
   alt: {
     desired: number;
     minimal: number;
@@ -29,6 +32,7 @@ export interface Leg {
 
 const mkLegState = (): Leg => ({
   name: "",
+  id: uuidv4(),
   alt: {
     desired: 0,
     minimal: 0,
@@ -226,10 +230,7 @@ export const useFplStore = create<FlightPlanStore>()(
         ),
     }),
     {
-      name: (() => {
-        const fpl1 = getFplListKeys()?.[0];
-        return fpl1 ? fpl1 : "vfr-nav-fpl-1";
-      })(),
+      name: getDefaultFplKey(),
       partialize: (state) => {
         const {
           aircraft,
@@ -253,6 +254,22 @@ export const useFplStore = create<FlightPlanStore>()(
         ...(persistedState as Record<string, any>),
         legsHandlers: currentState.legsHandlers,
       }),
+      version: 1,
+      migrate: (persistedState, version) => {
+        if (version === 0) {
+          const verifiedState = fplValidatorV0(persistedState)
+            ? (persistedState as any as FlightPlanStore)
+            : null;
+
+          if (!verifiedState) throw new Error("Données corrompues");
+
+          verifiedState.legs = verifiedState.legs.map((leg) => ({
+            ...leg,
+            id: uuidv4(),
+          }));
+          return verifiedState as any;
+        }
+      },
     }
   )
 );
